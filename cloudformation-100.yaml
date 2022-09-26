@@ -1,0 +1,3840 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation Template for creating N number of python lambda functions that run on cron schedule
+###############################################################################
+Parameters:
+###############################################################################
+
+  Code:
+    Type: String
+    Description: Python code to be run in each lambda
+    Default: | 
+      import urllib3
+      def lambda_handler(event, context):
+          url = "https://test.com"
+          http = urllib3.PoolManager()
+          r = http.request('GET', url)
+          print(r.data)
+          return {
+              "statusCode": r.status,
+              "headers": {
+                  "Content-Type": "application/json"
+              },
+              "body": r.data
+          }
+
+  NumToDeploy:
+    Type: Number
+    Description: Number of bots to deploy (increments of 5)
+    Default: 100
+    AllowedValues: 
+      - 100
+      - 95
+      - 90
+      - 85
+      - 80
+      - 75
+      - 70
+      - 65
+      - 60
+      - 55
+      - 50
+      - 45
+      - 40
+      - 35
+      - 30
+      - 25
+      - 20
+      - 15
+      - 10
+      - 5
+      
+###############################################################################
+Mappings: 
+###############################################################################
+  #Description: Cron Schedule for EventBridge Rule
+  #!FindInMap [CrontabMap, Cron1, Name]
+  CrontabMap: 
+    Cron1: 
+      Name: 'cron(1/10 * * * ? *)'
+    Cron2: 
+      Name: 'cron(2/10 * * * ? *)'
+    Cron3: 
+      Name: 'cron(3/10 * * * ? *)'
+    Cron4: 
+      Name: 'cron(4/10 * * * ? *)'
+    Cron5: 
+      Name: 'cron(5/10 * * * ? *)'
+    Cron6: 
+      Name: 'cron(6/10 * * * ? *)'
+    Cron7: 
+      Name: 'cron(7/10 * * * ? *)'
+    Cron8: 
+      Name: 'cron(8/10 * * * ? *)'
+    Cron9: 
+      Name: 'cron(9/10 * * * ? *)'
+    Cron0: 
+      Name: 'cron(0/10 * * * ? *)'
+
+###############################################################################
+Conditions:
+###############################################################################
+  Deploy100: !Equals [!Ref NumToDeploy, 100]
+  Deploy95: !Or [!Equals [!Ref NumToDeploy, 95], !Condition Deploy100]
+  Deploy90: !Or [!Equals [!Ref NumToDeploy, 90], !Condition Deploy95]
+  Deploy85: !Or [!Equals [!Ref NumToDeploy, 85], !Condition Deploy90]
+  Deploy80: !Or [!Equals [!Ref NumToDeploy, 80], !Condition Deploy85]
+  Deploy75: !Or [!Equals [!Ref NumToDeploy, 75], !Condition Deploy80]
+  Deploy70: !Or [!Equals [!Ref NumToDeploy, 70], !Condition Deploy75]
+  Deploy65: !Or [!Equals [!Ref NumToDeploy, 65], !Condition Deploy70]
+  Deploy60: !Or [!Equals [!Ref NumToDeploy, 60], !Condition Deploy65]
+  Deploy55: !Or [!Equals [!Ref NumToDeploy, 55], !Condition Deploy60]
+  Deploy50: !Or [!Equals [!Ref NumToDeploy, 50], !Condition Deploy55]
+  Deploy45: !Or [!Equals [!Ref NumToDeploy, 45], !Condition Deploy50]
+  Deploy40: !Or [!Equals [!Ref NumToDeploy, 40], !Condition Deploy45]
+  Deploy35: !Or [!Equals [!Ref NumToDeploy, 35], !Condition Deploy40]
+  Deploy30: !Or [!Equals [!Ref NumToDeploy, 30], !Condition Deploy35]
+  Deploy25: !Or [!Equals [!Ref NumToDeploy, 25], !Condition Deploy30]
+  Deploy20: !Or [!Equals [!Ref NumToDeploy, 20], !Condition Deploy25]
+  Deploy15: !Or [!Equals [!Ref NumToDeploy, 15], !Condition Deploy20]
+  Deploy10: !Or [!Equals [!Ref NumToDeploy, 10], !Condition Deploy15]
+  Deploy5: !Or [!Equals [!Ref NumToDeploy, 5], !Condition Deploy10]
+
+###############################################################################
+Resources:
+###############################################################################
+
+#Deploy5
+###############################################################################
+  Role:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-'
+            - !Ref AWS::Region
+            - '-Role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: !Join
+            - ''
+            - - !Ref AWS::StackName
+              - '-InlinePolicy'
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 'logs:CreateLogGroup'
+                Resource: 'arn:aws:logs:*:*:*'
+              - Effect: Allow
+                Action: 
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: 'arn:aws:logs:*:*:log-group:/aws/lambda/*:*'
+
+  Function1:
+    Type: AWS::Lambda::Function
+    Condition: Deploy5
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda1'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function2:
+    Type: AWS::Lambda::Function
+    Condition: Deploy5
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda2'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function3:
+    Type: AWS::Lambda::Function
+    Condition: Deploy5
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda3'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function4:
+    Type: AWS::Lambda::Function
+    Condition: Deploy5
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda4'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function5:
+    Type: AWS::Lambda::Function
+    Condition: Deploy5
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda5'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule1: 
+    Condition: Deploy5
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule1'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron1, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function1.Arn
+          Id: "TargetFunctionV1"
+        - 
+          Arn: !GetAtt Function2.Arn
+          Id: "TargetFunctionV2"
+        - 
+          Arn: !GetAtt Function3.Arn
+          Id: "TargetFunctionV3"
+        - 
+          Arn: !GetAtt Function4.Arn
+          Id: "TargetFunctionV4"
+        - 
+          Arn: !GetAtt Function5.Arn
+          Id: "TargetFunctionV5"
+
+  PermissionForEventsToInvokeLambda1: 
+    Condition: Deploy5
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function1
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule1.Arn
+
+  PermissionForEventsToInvokeLambda2: 
+    Condition: Deploy5
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function2
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule1.Arn
+
+  PermissionForEventsToInvokeLambda3: 
+    Condition: Deploy5
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function3
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule1.Arn
+
+  PermissionForEventsToInvokeLambda4: 
+    Condition: Deploy5
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function4
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule1.Arn
+
+  PermissionForEventsToInvokeLambda5: 
+    Condition: Deploy5
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function5
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule1.Arn
+
+#Deploy10
+###############################################################################
+  Function6:
+    Type: AWS::Lambda::Function
+    Condition: Deploy10
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda6'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function7:
+    Type: AWS::Lambda::Function
+    Condition: Deploy10
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda7'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function8:
+    Type: AWS::Lambda::Function
+    Condition: Deploy10
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda8'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function9:
+    Type: AWS::Lambda::Function
+    Condition: Deploy10
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda9'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function10:
+    Type: AWS::Lambda::Function
+    Condition: Deploy10
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda10'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule2: 
+    Condition: Deploy10
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule2'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron1, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function6.Arn
+          Id: "TargetFunctionV6"
+        - 
+          Arn: !GetAtt Function7.Arn
+          Id: "TargetFunctionV7"
+        - 
+          Arn: !GetAtt Function8.Arn
+          Id: "TargetFunctionV8"
+        - 
+          Arn: !GetAtt Function9.Arn
+          Id: "TargetFunctionV9"
+        - 
+          Arn: !GetAtt Function10.Arn
+          Id: "TargetFunctionV10"
+
+  PermissionForEventsToInvokeLambda6: 
+    Condition: Deploy10
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function6
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule2.Arn
+
+  PermissionForEventsToInvokeLambda7: 
+    Condition: Deploy10
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function7
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule2.Arn
+
+  PermissionForEventsToInvokeLambda8: 
+    Condition: Deploy10
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function8
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule2.Arn
+
+  PermissionForEventsToInvokeLambda9: 
+    Condition: Deploy10
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function9
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule2.Arn
+
+  PermissionForEventsToInvokeLambda10: 
+    Condition: Deploy10
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function10
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule2.Arn
+
+#Deploy15
+###############################################################################
+  Function11:
+    Type: AWS::Lambda::Function
+    Condition: Deploy15
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda11'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function12:
+    Type: AWS::Lambda::Function
+    Condition: Deploy15
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda12'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function13:
+    Type: AWS::Lambda::Function
+    Condition: Deploy15
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda13'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function14:
+    Type: AWS::Lambda::Function
+    Condition: Deploy15
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda14'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function15:
+    Type: AWS::Lambda::Function
+    Condition: Deploy15
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda15'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule3: 
+    Condition: Deploy15
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule3'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron2, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function11.Arn
+          Id: "TargetFunctionV11"
+        - 
+          Arn: !GetAtt Function12.Arn
+          Id: "TargetFunctionV12"
+        - 
+          Arn: !GetAtt Function13.Arn
+          Id: "TargetFunctionV13"
+        - 
+          Arn: !GetAtt Function14.Arn
+          Id: "TargetFunctionV14"
+        - 
+          Arn: !GetAtt Function15.Arn
+          Id: "TargetFunctionV15"
+
+  PermissionForEventsToInvokeLambda11: 
+    Condition: Deploy15
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function11
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule3.Arn
+
+  PermissionForEventsToInvokeLambda12: 
+    Condition: Deploy15
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function12
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule3.Arn
+
+  PermissionForEventsToInvokeLambda13: 
+    Condition: Deploy15
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function13
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule3.Arn
+
+  PermissionForEventsToInvokeLambda14: 
+    Condition: Deploy15
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function14
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule3.Arn
+
+  PermissionForEventsToInvokeLambda15: 
+    Condition: Deploy15
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function15
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule3.Arn
+
+#Deploy20
+###############################################################################
+  Function16:
+    Type: AWS::Lambda::Function
+    Condition: Deploy20
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda16'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function17:
+    Type: AWS::Lambda::Function
+    Condition: Deploy20
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda17'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function18:
+    Type: AWS::Lambda::Function
+    Condition: Deploy20
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda18'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function19:
+    Type: AWS::Lambda::Function
+    Condition: Deploy20
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda19'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function20:
+    Type: AWS::Lambda::Function
+    Condition: Deploy20
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda20'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule4: 
+    Condition: Deploy20
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule4'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron2, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function16.Arn
+          Id: "TargetFunctionV16"
+        - 
+          Arn: !GetAtt Function17.Arn
+          Id: "TargetFunctionV17"
+        - 
+          Arn: !GetAtt Function18.Arn
+          Id: "TargetFunctionV18"
+        - 
+          Arn: !GetAtt Function19.Arn
+          Id: "TargetFunctionV19"
+        - 
+          Arn: !GetAtt Function20.Arn
+          Id: "TargetFunctionV20"
+
+  PermissionForEventsToInvokeLambda16: 
+    Condition: Deploy20
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function16
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule4.Arn
+
+  PermissionForEventsToInvokeLambda17: 
+    Condition: Deploy20
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function17
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule4.Arn
+
+  PermissionForEventsToInvokeLambda18: 
+    Condition: Deploy20
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function18
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule4.Arn
+
+  PermissionForEventsToInvokeLambda19: 
+    Condition: Deploy20
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function19
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule4.Arn
+
+  PermissionForEventsToInvokeLambda20: 
+    Condition: Deploy20
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function20
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule4.Arn
+
+#Deploy25
+###############################################################################
+  Function21:
+    Type: AWS::Lambda::Function
+    Condition: Deploy25
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda21'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function22:
+    Type: AWS::Lambda::Function
+    Condition: Deploy25
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda22'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function23:
+    Type: AWS::Lambda::Function
+    Condition: Deploy25
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda23'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function24:
+    Type: AWS::Lambda::Function
+    Condition: Deploy25
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda24'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function25:
+    Type: AWS::Lambda::Function
+    Condition: Deploy25
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda25'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule5: 
+    Condition: Deploy25
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule5'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron3, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function21.Arn
+          Id: "TargetFunctionV21"
+        - 
+          Arn: !GetAtt Function22.Arn
+          Id: "TargetFunctionV22"
+        - 
+          Arn: !GetAtt Function23.Arn
+          Id: "TargetFunctionV23"
+        - 
+          Arn: !GetAtt Function24.Arn
+          Id: "TargetFunctionV24"
+        - 
+          Arn: !GetAtt Function25.Arn
+          Id: "TargetFunctionV25"
+
+  PermissionForEventsToInvokeLambda21: 
+    Condition: Deploy25
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function21
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule5.Arn
+
+  PermissionForEventsToInvokeLambda22: 
+    Condition: Deploy25
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function22
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule5.Arn
+
+  PermissionForEventsToInvokeLambda23: 
+    Condition: Deploy25
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function23
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule5.Arn
+
+  PermissionForEventsToInvokeLambda24: 
+    Condition: Deploy25
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function24
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule5.Arn
+
+  PermissionForEventsToInvokeLambda25: 
+    Condition: Deploy25
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function25
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule5.Arn
+
+#Deploy30
+###############################################################################
+  Function26:
+    Type: AWS::Lambda::Function
+    Condition: Deploy30
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda26'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function27:
+    Type: AWS::Lambda::Function
+    Condition: Deploy30
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda27'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function28:
+    Type: AWS::Lambda::Function
+    Condition: Deploy30
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda28'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function29:
+    Type: AWS::Lambda::Function
+    Condition: Deploy30
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda29'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function30:
+    Type: AWS::Lambda::Function
+    Condition: Deploy30
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda30'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule6: 
+    Condition: Deploy30
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule6'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron3, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function26.Arn
+          Id: "TargetFunctionV26"
+        - 
+          Arn: !GetAtt Function27.Arn
+          Id: "TargetFunctionV27"
+        - 
+          Arn: !GetAtt Function28.Arn
+          Id: "TargetFunctionV28"
+        - 
+          Arn: !GetAtt Function29.Arn
+          Id: "TargetFunctionV29"
+        - 
+          Arn: !GetAtt Function30.Arn
+          Id: "TargetFunctionV30"
+
+  PermissionForEventsToInvokeLambda26: 
+    Condition: Deploy30
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function26
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule6.Arn
+
+  PermissionForEventsToInvokeLambda27: 
+    Condition: Deploy30
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function27
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule6.Arn
+
+  PermissionForEventsToInvokeLambda28: 
+    Condition: Deploy30
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function28
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule6.Arn
+
+  PermissionForEventsToInvokeLambda29: 
+    Condition: Deploy30
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function29
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule6.Arn
+
+  PermissionForEventsToInvokeLambda30: 
+    Condition: Deploy30
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function30
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule6.Arn
+
+#Deploy35
+###############################################################################
+  Function31:
+    Type: AWS::Lambda::Function
+    Condition: Deploy35
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda31'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function32:
+    Type: AWS::Lambda::Function
+    Condition: Deploy35
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda32'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function33:
+    Type: AWS::Lambda::Function
+    Condition: Deploy35
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda33'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function34:
+    Type: AWS::Lambda::Function
+    Condition: Deploy35
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda34'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function35:
+    Type: AWS::Lambda::Function
+    Condition: Deploy35
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda35'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule7: 
+    Condition: Deploy35
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule7'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron4, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function31.Arn
+          Id: "TargetFunctionV31"
+        - 
+          Arn: !GetAtt Function32.Arn
+          Id: "TargetFunctionV32"
+        - 
+          Arn: !GetAtt Function33.Arn
+          Id: "TargetFunctionV33"
+        - 
+          Arn: !GetAtt Function34.Arn
+          Id: "TargetFunctionV34"
+        - 
+          Arn: !GetAtt Function35.Arn
+          Id: "TargetFunctionV35"
+
+  PermissionForEventsToInvokeLambda31: 
+    Condition: Deploy35
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function31
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule7.Arn
+
+  PermissionForEventsToInvokeLambda32: 
+    Condition: Deploy35
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function32
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule7.Arn
+
+  PermissionForEventsToInvokeLambda33: 
+    Condition: Deploy35
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function33
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule7.Arn
+
+  PermissionForEventsToInvokeLambda34: 
+    Condition: Deploy35
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function34
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule7.Arn
+
+  PermissionForEventsToInvokeLambda35: 
+    Condition: Deploy35
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function35
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule7.Arn
+
+#Deploy40
+###############################################################################
+  Function36:
+    Type: AWS::Lambda::Function
+    Condition: Deploy40
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda36'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function37:
+    Type: AWS::Lambda::Function
+    Condition: Deploy40
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda37'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function38:
+    Type: AWS::Lambda::Function
+    Condition: Deploy40
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda38'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function39:
+    Type: AWS::Lambda::Function
+    Condition: Deploy40
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda39'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function40:
+    Type: AWS::Lambda::Function
+    Condition: Deploy40
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda40'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule8: 
+    Condition: Deploy40
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule8'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron4, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function36.Arn
+          Id: "TargetFunctionV36"
+        - 
+          Arn: !GetAtt Function37.Arn
+          Id: "TargetFunctionV37"
+        - 
+          Arn: !GetAtt Function38.Arn
+          Id: "TargetFunctionV38"
+        - 
+          Arn: !GetAtt Function39.Arn
+          Id: "TargetFunctionV39"
+        - 
+          Arn: !GetAtt Function40.Arn
+          Id: "TargetFunctionV40"
+
+  PermissionForEventsToInvokeLambda36: 
+    Condition: Deploy40
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function36
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule8.Arn
+
+  PermissionForEventsToInvokeLambda37: 
+    Condition: Deploy40
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function37
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule8.Arn
+
+  PermissionForEventsToInvokeLambda38: 
+    Condition: Deploy40
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function38
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule8.Arn
+
+  PermissionForEventsToInvokeLambda39: 
+    Condition: Deploy40
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function39
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule8.Arn
+
+  PermissionForEventsToInvokeLambda40: 
+    Condition: Deploy40
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function40
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule8.Arn
+
+#Deploy45
+###############################################################################
+  Function41:
+    Type: AWS::Lambda::Function
+    Condition: Deploy45
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda41'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function42:
+    Type: AWS::Lambda::Function
+    Condition: Deploy45
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda42'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function43:
+    Type: AWS::Lambda::Function
+    Condition: Deploy45
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda43'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function44:
+    Type: AWS::Lambda::Function
+    Condition: Deploy45
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda44'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function45:
+    Type: AWS::Lambda::Function
+    Condition: Deploy45
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda45'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule9: 
+    Condition: Deploy45
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule9'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron5, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function41.Arn
+          Id: "TargetFunctionV41"
+        - 
+          Arn: !GetAtt Function42.Arn
+          Id: "TargetFunctionV42"
+        - 
+          Arn: !GetAtt Function43.Arn
+          Id: "TargetFunctionV43"
+        - 
+          Arn: !GetAtt Function44.Arn
+          Id: "TargetFunctionV44"
+        - 
+          Arn: !GetAtt Function45.Arn
+          Id: "TargetFunctionV45"
+
+  PermissionForEventsToInvokeLambda41: 
+    Condition: Deploy45
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function41
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule9.Arn
+
+  PermissionForEventsToInvokeLambda42: 
+    Condition: Deploy45
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function42
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule9.Arn
+
+  PermissionForEventsToInvokeLambda43: 
+    Condition: Deploy45
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function43
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule9.Arn
+
+  PermissionForEventsToInvokeLambda44: 
+    Condition: Deploy45
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function44
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule9.Arn
+
+  PermissionForEventsToInvokeLambda45: 
+    Condition: Deploy45
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function45
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule9.Arn
+
+#Deploy50
+###############################################################################
+  Function46:
+    Type: AWS::Lambda::Function
+    Condition: Deploy50
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda46'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function47:
+    Type: AWS::Lambda::Function
+    Condition: Deploy50
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda47'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function48:
+    Type: AWS::Lambda::Function
+    Condition: Deploy50
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda48'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function49:
+    Type: AWS::Lambda::Function
+    Condition: Deploy50
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda49'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function50:
+    Type: AWS::Lambda::Function
+    Condition: Deploy50
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda50'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule10: 
+    Condition: Deploy50
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule10'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron5, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function46.Arn
+          Id: "TargetFunctionV46"
+        - 
+          Arn: !GetAtt Function47.Arn
+          Id: "TargetFunctionV47"
+        - 
+          Arn: !GetAtt Function48.Arn
+          Id: "TargetFunctionV48"
+        - 
+          Arn: !GetAtt Function49.Arn
+          Id: "TargetFunctionV49"
+        - 
+          Arn: !GetAtt Function50.Arn
+          Id: "TargetFunctionV50"
+
+  PermissionForEventsToInvokeLambda46: 
+    Condition: Deploy50
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function46
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule10.Arn
+
+  PermissionForEventsToInvokeLambda47: 
+    Condition: Deploy50
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function47
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule10.Arn
+
+  PermissionForEventsToInvokeLambda48: 
+    Condition: Deploy50
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function48
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule10.Arn
+
+  PermissionForEventsToInvokeLambda49: 
+    Condition: Deploy50
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function49
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule10.Arn
+
+  PermissionForEventsToInvokeLambda50: 
+    Condition: Deploy50
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function50
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule10.Arn
+
+#Deploy55
+###############################################################################
+  Function51:
+    Type: AWS::Lambda::Function
+    Condition: Deploy55
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda51'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function52:
+    Type: AWS::Lambda::Function
+    Condition: Deploy55
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda52'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function53:
+    Type: AWS::Lambda::Function
+    Condition: Deploy55
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda53'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function54:
+    Type: AWS::Lambda::Function
+    Condition: Deploy55
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda54'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function55:
+    Type: AWS::Lambda::Function
+    Condition: Deploy55
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda55'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule11: 
+    Condition: Deploy55
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule11'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron6, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function51.Arn
+          Id: "TargetFunctionV51"
+        - 
+          Arn: !GetAtt Function52.Arn
+          Id: "TargetFunctionV52"
+        - 
+          Arn: !GetAtt Function53.Arn
+          Id: "TargetFunctionV53"
+        - 
+          Arn: !GetAtt Function54.Arn
+          Id: "TargetFunctionV54"
+        - 
+          Arn: !GetAtt Function55.Arn
+          Id: "TargetFunctionV55"
+
+  PermissionForEventsToInvokeLambda51: 
+    Condition: Deploy55
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function51
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule11.Arn
+
+  PermissionForEventsToInvokeLambda52: 
+    Condition: Deploy55
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function52
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule11.Arn
+
+  PermissionForEventsToInvokeLambda53: 
+    Condition: Deploy55
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function53
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule11.Arn
+
+  PermissionForEventsToInvokeLambda54: 
+    Condition: Deploy55
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function54
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule11.Arn
+
+  PermissionForEventsToInvokeLambda55: 
+    Condition: Deploy55
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function55
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule11.Arn
+
+#Deploy60
+###############################################################################
+  Function56:
+    Type: AWS::Lambda::Function
+    Condition: Deploy60
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda56'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function57:
+    Type: AWS::Lambda::Function
+    Condition: Deploy60
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda57'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function58:
+    Type: AWS::Lambda::Function
+    Condition: Deploy60
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda58'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function59:
+    Type: AWS::Lambda::Function
+    Condition: Deploy60
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda59'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function60:
+    Type: AWS::Lambda::Function
+    Condition: Deploy60
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda60'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule12: 
+    Condition: Deploy60
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule12'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron6, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function56.Arn
+          Id: "TargetFunctionV56"
+        - 
+          Arn: !GetAtt Function57.Arn
+          Id: "TargetFunctionV57"
+        - 
+          Arn: !GetAtt Function58.Arn
+          Id: "TargetFunctionV58"
+        - 
+          Arn: !GetAtt Function59.Arn
+          Id: "TargetFunctionV59"
+        - 
+          Arn: !GetAtt Function60.Arn
+          Id: "TargetFunctionV60"
+
+  PermissionForEventsToInvokeLambda56: 
+    Condition: Deploy60
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function56
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule12.Arn
+
+  PermissionForEventsToInvokeLambda57: 
+    Condition: Deploy60
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function57
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule12.Arn
+
+  PermissionForEventsToInvokeLambda58: 
+    Condition: Deploy60
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function58
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule12.Arn
+
+  PermissionForEventsToInvokeLambda59: 
+    Condition: Deploy60
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function59
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule12.Arn
+
+  PermissionForEventsToInvokeLambda60: 
+    Condition: Deploy60
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function60
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule12.Arn
+
+#Deploy65
+###############################################################################
+  Function61:
+    Type: AWS::Lambda::Function
+    Condition: Deploy65
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda61'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function62:
+    Type: AWS::Lambda::Function
+    Condition: Deploy65
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda62'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function63:
+    Type: AWS::Lambda::Function
+    Condition: Deploy65
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda63'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function64:
+    Type: AWS::Lambda::Function
+    Condition: Deploy65
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda64'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function65:
+    Type: AWS::Lambda::Function
+    Condition: Deploy65
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda65'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule13: 
+    Condition: Deploy65
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule13'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron7, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function61.Arn
+          Id: "TargetFunctionV61"
+        - 
+          Arn: !GetAtt Function62.Arn
+          Id: "TargetFunctionV62"
+        - 
+          Arn: !GetAtt Function63.Arn
+          Id: "TargetFunctionV63"
+        - 
+          Arn: !GetAtt Function64.Arn
+          Id: "TargetFunctionV64"
+        - 
+          Arn: !GetAtt Function65.Arn
+          Id: "TargetFunctionV65"
+
+  PermissionForEventsToInvokeLambda61: 
+    Condition: Deploy65
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function61
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule13.Arn
+
+  PermissionForEventsToInvokeLambda62: 
+    Condition: Deploy65
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function62
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule13.Arn
+
+  PermissionForEventsToInvokeLambda63: 
+    Condition: Deploy65
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function63
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule13.Arn
+
+  PermissionForEventsToInvokeLambda64: 
+    Condition: Deploy65
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function64
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule13.Arn
+
+  PermissionForEventsToInvokeLambda65: 
+    Condition: Deploy65
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function65
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule13.Arn
+
+#Deploy70
+###############################################################################
+  Function66:
+    Type: AWS::Lambda::Function
+    Condition: Deploy70
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda66'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function67:
+    Type: AWS::Lambda::Function
+    Condition: Deploy70
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda67'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function68:
+    Type: AWS::Lambda::Function
+    Condition: Deploy70
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda68'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function69:
+    Type: AWS::Lambda::Function
+    Condition: Deploy70
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda69'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function70:
+    Type: AWS::Lambda::Function
+    Condition: Deploy70
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda70'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule14: 
+    Condition: Deploy70
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule14'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron7, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function66.Arn
+          Id: "TargetFunctionV66"
+        - 
+          Arn: !GetAtt Function67.Arn
+          Id: "TargetFunctionV67"
+        - 
+          Arn: !GetAtt Function68.Arn
+          Id: "TargetFunctionV68"
+        - 
+          Arn: !GetAtt Function69.Arn
+          Id: "TargetFunctionV69"
+        - 
+          Arn: !GetAtt Function70.Arn
+          Id: "TargetFunctionV70"
+
+  PermissionForEventsToInvokeLambda66: 
+    Condition: Deploy70
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function66
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule14.Arn
+
+  PermissionForEventsToInvokeLambda67: 
+    Condition: Deploy70
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function67
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule14.Arn
+
+  PermissionForEventsToInvokeLambda68: 
+    Condition: Deploy70
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function68
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule14.Arn
+
+  PermissionForEventsToInvokeLambda69: 
+    Condition: Deploy70
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function69
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule14.Arn
+
+  PermissionForEventsToInvokeLambda70: 
+    Condition: Deploy70
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function70
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule14.Arn
+
+#Deploy75
+###############################################################################
+  Function71:
+    Type: AWS::Lambda::Function
+    Condition: Deploy75
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda71'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function72:
+    Type: AWS::Lambda::Function
+    Condition: Deploy75
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda72'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function73:
+    Type: AWS::Lambda::Function
+    Condition: Deploy75
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda73'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function74:
+    Type: AWS::Lambda::Function
+    Condition: Deploy75
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda74'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function75:
+    Type: AWS::Lambda::Function
+    Condition: Deploy75
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda75'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule15: 
+    Condition: Deploy75
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule15'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron8, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function71.Arn
+          Id: "TargetFunctionV71"
+        - 
+          Arn: !GetAtt Function72.Arn
+          Id: "TargetFunctionV72"
+        - 
+          Arn: !GetAtt Function73.Arn
+          Id: "TargetFunctionV73"
+        - 
+          Arn: !GetAtt Function74.Arn
+          Id: "TargetFunctionV74"
+        - 
+          Arn: !GetAtt Function75.Arn
+          Id: "TargetFunctionV75"
+
+  PermissionForEventsToInvokeLambda71: 
+    Condition: Deploy75
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function71
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule15.Arn
+
+  PermissionForEventsToInvokeLambda72: 
+    Condition: Deploy75
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function72
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule15.Arn
+
+  PermissionForEventsToInvokeLambda73: 
+    Condition: Deploy75
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function73
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule15.Arn
+
+  PermissionForEventsToInvokeLambda74: 
+    Condition: Deploy75
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function74
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule15.Arn
+
+  PermissionForEventsToInvokeLambda75: 
+    Condition: Deploy75
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function75
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule15.Arn
+
+#Deploy80
+###############################################################################
+  Function76:
+    Type: AWS::Lambda::Function
+    Condition: Deploy80
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda76'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function77:
+    Type: AWS::Lambda::Function
+    Condition: Deploy80
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda77'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function78:
+    Type: AWS::Lambda::Function
+    Condition: Deploy80
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda78'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function79:
+    Type: AWS::Lambda::Function
+    Condition: Deploy80
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda79'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function80:
+    Type: AWS::Lambda::Function
+    Condition: Deploy80
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda80'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule16: 
+    Condition: Deploy80
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule16'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron8, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function76.Arn
+          Id: "TargetFunctionV76"
+        - 
+          Arn: !GetAtt Function77.Arn
+          Id: "TargetFunctionV77"
+        - 
+          Arn: !GetAtt Function78.Arn
+          Id: "TargetFunctionV78"
+        - 
+          Arn: !GetAtt Function79.Arn
+          Id: "TargetFunctionV79"
+        - 
+          Arn: !GetAtt Function80.Arn
+          Id: "TargetFunctionV80"
+
+  PermissionForEventsToInvokeLambda76: 
+    Condition: Deploy80
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function76
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule16.Arn
+
+  PermissionForEventsToInvokeLambda77: 
+    Condition: Deploy80
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function77
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule16.Arn
+
+  PermissionForEventsToInvokeLambda78: 
+    Condition: Deploy80
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function78
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule16.Arn
+
+  PermissionForEventsToInvokeLambda79: 
+    Condition: Deploy80
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function79
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule16.Arn
+
+  PermissionForEventsToInvokeLambda80: 
+    Condition: Deploy80
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function80
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule16.Arn
+
+#Deploy85
+###############################################################################
+  Function81:
+    Type: AWS::Lambda::Function
+    Condition: Deploy85
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda81'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function82:
+    Type: AWS::Lambda::Function
+    Condition: Deploy85
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda82'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function83:
+    Type: AWS::Lambda::Function
+    Condition: Deploy85
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda83'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function84:
+    Type: AWS::Lambda::Function
+    Condition: Deploy85
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda84'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function85:
+    Type: AWS::Lambda::Function
+    Condition: Deploy85
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda85'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule17: 
+    Condition: Deploy85
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule17'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron9, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function81.Arn
+          Id: "TargetFunctionV81"
+        - 
+          Arn: !GetAtt Function82.Arn
+          Id: "TargetFunctionV82"
+        - 
+          Arn: !GetAtt Function83.Arn
+          Id: "TargetFunctionV83"
+        - 
+          Arn: !GetAtt Function84.Arn
+          Id: "TargetFunctionV84"
+        - 
+          Arn: !GetAtt Function85.Arn
+          Id: "TargetFunctionV85"
+
+  PermissionForEventsToInvokeLambda81: 
+    Condition: Deploy85
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function81
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule17.Arn
+
+  PermissionForEventsToInvokeLambda82: 
+    Condition: Deploy85
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function82
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule17.Arn
+
+  PermissionForEventsToInvokeLambda83: 
+    Condition: Deploy85
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function83
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule17.Arn
+
+  PermissionForEventsToInvokeLambda84: 
+    Condition: Deploy85
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function84
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule17.Arn
+
+  PermissionForEventsToInvokeLambda85: 
+    Condition: Deploy85
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function85
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule17.Arn
+
+#Deploy90
+###############################################################################
+  Function86:
+    Type: AWS::Lambda::Function
+    Condition: Deploy90
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda86'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function87:
+    Type: AWS::Lambda::Function
+    Condition: Deploy90
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda87'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function88:
+    Type: AWS::Lambda::Function
+    Condition: Deploy90
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda88'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function89:
+    Type: AWS::Lambda::Function
+    Condition: Deploy90
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda89'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function90:
+    Type: AWS::Lambda::Function
+    Condition: Deploy90
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda90'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule18: 
+    Condition: Deploy90
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule18'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron9, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function86.Arn
+          Id: "TargetFunctionV86"
+        - 
+          Arn: !GetAtt Function87.Arn
+          Id: "TargetFunctionV87"
+        - 
+          Arn: !GetAtt Function88.Arn
+          Id: "TargetFunctionV88"
+        - 
+          Arn: !GetAtt Function89.Arn
+          Id: "TargetFunctionV89"
+        - 
+          Arn: !GetAtt Function90.Arn
+          Id: "TargetFunctionV90"
+
+  PermissionForEventsToInvokeLambda86: 
+    Condition: Deploy90
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function86
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule18.Arn
+
+  PermissionForEventsToInvokeLambda87: 
+    Condition: Deploy90
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function87
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule18.Arn
+
+  PermissionForEventsToInvokeLambda88: 
+    Condition: Deploy90
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function88
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule18.Arn
+
+  PermissionForEventsToInvokeLambda89: 
+    Condition: Deploy90
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function89
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule18.Arn
+
+  PermissionForEventsToInvokeLambda90: 
+    Condition: Deploy90
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function90
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule18.Arn
+
+#Deploy95
+###############################################################################
+  Function91:
+    Type: AWS::Lambda::Function
+    Condition: Deploy95
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda91'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function92:
+    Type: AWS::Lambda::Function
+    Condition: Deploy95
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda92'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function93:
+    Type: AWS::Lambda::Function
+    Condition: Deploy95
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda93'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function94:
+    Type: AWS::Lambda::Function
+    Condition: Deploy95
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda94'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function95:
+    Type: AWS::Lambda::Function
+    Condition: Deploy95
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda95'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule19: 
+    Condition: Deploy95
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule19'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron0, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function91.Arn
+          Id: "TargetFunctionV91"
+        - 
+          Arn: !GetAtt Function92.Arn
+          Id: "TargetFunctionV92"
+        - 
+          Arn: !GetAtt Function93.Arn
+          Id: "TargetFunctionV93"
+        - 
+          Arn: !GetAtt Function94.Arn
+          Id: "TargetFunctionV94"
+        - 
+          Arn: !GetAtt Function95.Arn
+          Id: "TargetFunctionV95"
+
+  PermissionForEventsToInvokeLambda91: 
+    Condition: Deploy95
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function91
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule19.Arn
+
+  PermissionForEventsToInvokeLambda92: 
+    Condition: Deploy95
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function92
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule19.Arn
+
+  PermissionForEventsToInvokeLambda93: 
+    Condition: Deploy95
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function93
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule19.Arn
+
+  PermissionForEventsToInvokeLambda94: 
+    Condition: Deploy95
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function94
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule19.Arn
+
+  PermissionForEventsToInvokeLambda95: 
+    Condition: Deploy95
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function95
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule19.Arn
+
+#Deploy100
+###############################################################################
+  Function96:
+    Type: AWS::Lambda::Function
+    Condition: Deploy100
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda96'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function97:
+    Type: AWS::Lambda::Function
+    Condition: Deploy100
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda97'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+
+  Function98:
+    Type: AWS::Lambda::Function
+    Condition: Deploy100
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda98'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile: 
+          !Sub ${Code}
+      
+  Function99:
+    Type: AWS::Lambda::Function
+    Condition: Deploy100
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda99'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+      
+  Function100:
+    Type: AWS::Lambda::Function
+    Condition: Deploy100
+    Properties:
+      FunctionName: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Lambda100'
+      Description: Invoke a function during stack creation.
+      Architectures: [arm64]
+      Runtime: python3.9
+      Role: !GetAtt Role.Arn
+      Handler: index.lambda_handler
+      MemorySize: 128
+      EphemeralStorage:
+        Size: 512
+      TracingConfig:
+        Mode: Active
+      Code:
+        ZipFile:
+          !Sub ${Code}
+
+  ScheduledRule20: 
+    Condition: Deploy100
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Join
+          - ''
+          - - !Ref AWS::StackName
+            - '-Rule20'
+      Description: "ScheduledRule"
+      ScheduleExpression: !FindInMap [CrontabMap, Cron0, Name]
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: !GetAtt Function96.Arn
+          Id: "TargetFunctionV96"
+        - 
+          Arn: !GetAtt Function97.Arn
+          Id: "TargetFunctionV97"
+        - 
+          Arn: !GetAtt Function98.Arn
+          Id: "TargetFunctionV98"
+        - 
+          Arn: !GetAtt Function99.Arn
+          Id: "TargetFunctionV99"
+        - 
+          Arn: !GetAtt Function100.Arn
+          Id: "TargetFunctionV100"
+
+  PermissionForEventsToInvokeLambda96: 
+    Condition: Deploy100
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function96
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule20.Arn
+
+  PermissionForEventsToInvokeLambda97: 
+    Condition: Deploy100
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function97
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule20.Arn
+
+  PermissionForEventsToInvokeLambda98: 
+    Condition: Deploy100
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function98
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule20.Arn
+
+  PermissionForEventsToInvokeLambda99: 
+    Condition: Deploy100
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function99
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule20.Arn
+
+  PermissionForEventsToInvokeLambda100: 
+    Condition: Deploy100
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref Function100
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt ScheduledRule20.Arn
